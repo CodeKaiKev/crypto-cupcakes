@@ -20,7 +20,37 @@ app.use(express.urlencoded({extended:true}));
   // define the config object
   // attach Auth0 OIDC auth router
   // create a GET / route handler that sends back Logged in or Logged out
+const { auth } = require('express-openid-connect');
 
+const { requiresAuth } = require('express-openid-connect');
+const {
+  AUTH0_SECRET = 'This is a secret token that will be used',
+  AUTH0_AUDIENCE = 'http://localhost:3000',
+  AUTH0_CLIENT_ID,
+  AUTH0_BASE_URL,
+} = process.env;
+
+const config = {
+  authRequired: true,
+  auth0Logout: true,
+  secret: AUTH0_SECRET,
+  baseURL: AUTH0_AUDIENCE,
+  clientID: AUTH0_CLIENT_ID,
+  issuerBaseURL: AUTH0_BASE_URL,
+};
+
+app.get('/profile', requiresAuth(), (req, res) => {
+  res.send(JSON.stringify(req.oidc.user));
+});
+
+// auth router attaches /login, /logout, and /callback routes to the baseURL
+app.use(auth(config));
+
+// req.isAuthenticated is provided from the auth router
+app.get('/', (req, res) => {
+  res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
+});
+  
 app.get('/cupcakes', async (req, res, next) => {
   try {
     const cupcakes = await Cupcake.findAll();
