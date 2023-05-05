@@ -39,18 +39,21 @@ const config = {
   issuerBaseURL: AUTH0_BASE_URL,
 };
 
-app.get('/profile', requiresAuth(), (req, res) => {
-  res.send(JSON.stringify(req.oidc.user));
-});
 
 // auth router attaches /login, /logout, and /callback routes to the baseURL
 app.use(auth(config));
 
 // req.isAuthenticated is provided from the auth router
 app.get('/', (req, res) => {
-  res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
+  console.log(req.oidc.user);
+  res.send(JSON.stringify(`<h1 style="text-align:center">My Web App, Inc.</h1><h1>Welcome, ${req.oidc.user.given_name} ${req.oidc.user.family_name}</h1><h2>Username: ${req.oidc.user.nickname}</h2><p>${req.oidc.user.email}</p><img src="https://lh3.googleusercontent.com/a/AGNmyxYig-74M5w5LnrM0QMaG_MwkjuJWB9HPRaTGb1eUI8=s96-c" alt="google.com">`));
+  //res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
 });
-  
+
+app.get('/profile', requiresAuth(), (req, res) => {
+  res.send(JSON.stringify(req.oidc.user));
+});
+
 app.get('/cupcakes', async (req, res, next) => {
   try {
     const cupcakes = await Cupcake.findAll();
